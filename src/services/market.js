@@ -33,17 +33,17 @@ const YAHOO_MAP = {
 const isCrypto  = s => s.startsWith('BINANCE:') || s.startsWith('COINBASE:')
 const yahooTick = s => YAHOO_MAP[s] || null
 
-// ── Yahoo Finance ─────────────────────────────────────────────────────────────
+// Yahoo Finance via CORS proxy
 async function yahooFetch(ticker, range='6mo') {
-  const bases = [
-    'https://query1.finance.yahoo.com/v8/finance/chart/',
-    'https://query2.finance.yahoo.com/v8/finance/chart/',
+  const yahoo = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yahoo)}`,
+    `https://corsproxy.io/?${encodeURIComponent(yahoo)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahoo)}`,
   ]
-  for (const base of bases) {
+  for (const url of proxies) {
     try {
-      const r = await fetch(`${base}${encodeURIComponent(ticker)}?interval=1d&range=${range}`, {
-        headers:{ 'Accept':'application/json', 'User-Agent':'Mozilla/5.0' }
-      })
+      const r = await fetch(url)
       if (!r.ok) continue
       const d = await r.json()
       const res = d?.chart?.result?.[0]
