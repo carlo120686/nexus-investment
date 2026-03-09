@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { SettingsProvider, useSettings } from './store/settings.js'
+import { SettingsProvider, useSettings } from './store/settings.jsx'
 import { ETF_LIST, COMMODITY_LIST, CRYPTO_LIST, ALL_ASSETS, TABS } from './services/assets.js'
-import { fetchQuote, fetchCandles, calcSignal } from './services/finnhub.js'
+import { fetchQuote, fetchCandles, calcSignal } from './services/market.js'
 import { analyzeAsset, analyzePortfolio } from './services/ai.js'
 import { loadPortfolio, savePortfolio, addHolding, removeHolding, updatePrices, portfolioStats } from './services/portfolio.js'
 import { simulatePAC, multiScenario, BENCHMARKS } from './services/pac.js'
@@ -232,86 +232,164 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
 
       {/* Detail panel */}
       {expanded&&hasData&&(
-        <div style={{borderTop:'1px solid var(--border)',padding:'20px 18px',display:'flex',flexDirection:'column',gap:20}}>
+        <DetailPanel candles={candles} quote={quote} signal={signal} aiAnalysis={aiAnalysis} aiLoading={aiLoading} aiActive={aiActive} />
+      )}
+    </div>
+  )
+}
 
-          {/* Indicators */}
-          <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
-            {[
-              {l:'RSI',v:candles.rsi?.toFixed(0),c:candles.rsi<30?'var(--buy)':candles.rsi>70?'var(--sell)':'var(--text2)'},
-              {l:'SMA 20',v:candles.sma20?.toFixed(2)},
-              {l:'SMA 50',v:candles.sma50?.toFixed(2)},
-              {l:'MACD',v:candles.macd?.signal,c:candles.macd?.signal==='bullish'?'var(--buy)':'var(--sell)'},
-              {l:'BB %',v:candles.bb?`${candles.bb.pct}%`:null,c:candles.bb?.pct<20?'var(--buy)':candles.bb?.pct>80?'var(--sell)':'var(--text2)'},
-              {l:'Golden ✕',v:candles.goldenCross?'SÌ ☀':'NO ☽',c:candles.goldenCross?'var(--buy)':'var(--sell)'},
-              {l:'ATR',v:candles.atr?.toFixed(2)},
-              {l:'52W H',v:candles.high52?.toFixed(2)},
-              {l:'52W L',v:candles.low52?.toFixed(2)},
-            ].map((ind,i)=>ind.v&&(
-              <div key={i} style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:6,padding:'8px 14px',minWidth:80}}>
-                <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',marginBottom:3,textTransform:'uppercase'}}>{ind.l}</div>
-                <div style={{fontFamily:'var(--font-mono)',fontSize:13,color:ind.c||'var(--text)',fontWeight:500}}>{ind.v??'—'}</div>
+function DetailPanel({candles, quote, signal, aiAnalysis, aiLoading, aiActive}) {
+  const [chartType, setChartType] = useState('area') // 'area' | 'candle'
+  const sigColor = s => s==='BUY'?'var(--buy)':s==='SELL'?'var(--sell)':'var(--hold)'
+  const sigBg    = s => s==='BUY'?'var(--buy-bg)':s==='SELL'?'var(--sell-bg)':'var(--hold-bg)'
+  const indColor = (v, low, hi) => v==null?'var(--text2)':v<=low?'var(--buy)':v>=hi?'var(--sell)':'var(--text2)'
+
+  const indicators = [
+    { l:'RSI 14',     v: candles.rsi!=null?`${candles.rsi}`:null,                                         c: indColor(candles.rsi,35,65) },
+    { l:'SMA 20',     v: candles.sma20!=null?candles.sma20.toFixed(2):null,                                c: candles.trendUp?'var(--buy)':'var(--sell)' },
+    { l:'SMA 50',     v: candles.sma50!=null?candles.sma50.toFixed(2):null },
+    { l:'EMA 9',      v: candles.ema9!=null?candles.ema9.toFixed(2):null },
+    { l:'EMA 21',     v: candles.ema21!=null?candles.ema21.toFixed(2):null },
+    { l:'Cross SMA',  v: candles.goldenCross!=null?(candles.goldenCross?'☀ Golden':'☽ Death'):null,       c: candles.goldenCross?'var(--buy)':'var(--sell)' },
+    { l:'Cross EMA',  v: candles.emaGolden!=null?(candles.emaGolden?'↑ EMA9>21':'↓ EMA9<21'):null,       c: candles.emaGolden?'var(--buy)':'var(--sell)' },
+    { l:'MACD',       v: candles.macd?.signal,                                                             c: candles.macd?.signal==='bullish'?'var(--buy)':'var(--sell)' },
+    { l:'MACD hist',  v: candles.macd?.histogram!=null?candles.macd.histogram.toFixed(4):null,            c: candles.macd?.histogram>0?'var(--buy)':'var(--sell)' },
+    { l:'BB %',       v: candles.bb!=null?`${candles.bb.pct}%`:null,                                      c: indColor(candles.bb?.pct,20,80) },
+    { l:'BB Squeeze', v: candles.bb?.squeeze!=null?(candles.bb.squeeze?'⚡ Sì':'— No'):null,              c: candles.bb?.squeeze?'var(--hold)':'var(--muted)' },
+    { l:'Stoch %K',   v: candles.stoch!=null?`${candles.stoch.k}`:null,                                   c: indColor(candles.stoch?.k,20,80) },
+    { l:'Stoch %D',   v: candles.stoch!=null?`${candles.stoch.d}`:null,                                   c: indColor(candles.stoch?.d,20,80) },
+    { l:'ATR',        v: candles.atr?.value!=null?`${candles.atr.value.toFixed(2)} (${candles.atr.pct}%)`:null },
+    { l:'OBV',        v: candles.obv?.trend,                                                               c: candles.obv?.signal==='bullish'?'var(--buy)':'var(--sell)' },
+    { l:'VWAP',       v: candles.vwap?.value!=null?candles.vwap.value.toFixed(2):null,                    c: candles.vwap?.aboveVwap?'var(--buy)':'var(--sell)' },
+    { l:'VWAP diff',  v: candles.vwap?.diff!=null?`${candles.vwap.diff}%`:null,                           c: candles.vwap?.aboveVwap?'var(--buy)':'var(--sell)' },
+    { l:'Ichimoku',   v: candles.ichimoku?.signal,                                                         c: candles.ichimoku?.signal==='bullish'?'var(--buy)':candles.ichimoku?.signal==='bearish'?'var(--sell)':'var(--hold)' },
+    { l:'Williams %R',v: candles.williamsR!=null?`${candles.williamsR.value}`:null,                       c: indColor(candles.williamsR?.value,-80,-20) },
+    { l:'CCI 20',     v: candles.cci!=null?`${candles.cci.value}`:null,                                   c: indColor(candles.cci?.value,-100,100) },
+    { l:'52W High',   v: candles.high52!=null?candles.high52.toFixed(2):null },
+    { l:'52W Low',    v: candles.low52!=null?candles.low52.toFixed(2):null },
+    { l:'Resistenza', v: candles.sr?.resistances?.[0]!=null?candles.sr.resistances[0].toFixed(2):null,   c:'var(--sell)' },
+    { l:'Supporto',   v: candles.sr?.supports?.[0]!=null?candles.sr.supports[0].toFixed(2):null,         c:'var(--buy)' },
+  ].filter(i=>i.v!=null)
+
+  return (
+    <div style={{borderTop:'1px solid var(--border)',padding:'20px 18px',display:'flex',flexDirection:'column',gap:20}}>
+
+      {/* Chart with toggle */}
+      <div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+          <span style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase'}}>Grafico 60 giorni</span>
+          <div style={{display:'flex',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:6,overflow:'hidden'}}>
+            {[{id:'area',l:'Area'},{ id:'candle',l:'Candele'}].map(t=>(
+              <button key={t.id} onClick={()=>setChartType(t.id)} style={{background:chartType===t.id?'var(--surface2)':'transparent',border:'none',color:chartType===t.id?'var(--text)':'var(--muted)',fontFamily:'var(--font-mono)',fontSize:10,padding:'5px 14px',cursor:'pointer',letterSpacing:1}}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+        </div>
+        {chartType==='area' ? (
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={candles.sparkline} margin={{top:4,right:4,bottom:0,left:0}}>
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={quote.change>=0?'var(--buy)':'var(--sell)'} stopOpacity={0.25}/>
+                  <stop offset="100%" stopColor={quote.change>=0?'var(--buy)':'var(--sell)'} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false}/>
+              <XAxis dataKey="i" hide />
+              <YAxis domain={['auto','auto']} tick={{fontSize:9,fill:'var(--muted)'}} tickLine={false} axisLine={false} width={55} tickFormatter={v=>v.toFixed(2)} />
+              <Tooltip contentStyle={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:4,fontSize:11}} formatter={v=>[v.toFixed(4),'Prezzo']} labelFormatter={()=>''} />
+              <Area type="monotone" dataKey="v" stroke={quote.change>=0?'var(--buy)':'var(--sell)'} fill="url(#areaGrad)" strokeWidth={2} dot={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <CandlestickChart data={candles.candleData||[]} />
+        )}
+      </div>
+
+      {/* Indicators grid */}
+      <div>
+        <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:10}}>Indicatori tecnici</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))',gap:6}}>
+          {indicators.map((ind,i)=>(
+            <div key={i} style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,padding:'7px 12px'}}>
+              <div style={{fontSize:8,letterSpacing:1.5,color:'var(--muted)',marginBottom:2,textTransform:'uppercase',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ind.l}</div>
+              <div style={{fontFamily:'var(--font-mono)',fontSize:12,color:ind.c||'var(--text)',fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ind.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Signal rows */}
+      {signal?.signals?.length>0&&(
+        <div>
+          <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:8}}>Segnali attivi</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
+            {signal.signals.map((s,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:4,background:s.t==='buy'?'var(--buy-bg)':s.t==='sell'?'var(--sell-bg)':'var(--surface2)',fontSize:11}}>
+                <span style={{fontFamily:'var(--font-mono)',fontWeight:600,color:s.t==='buy'?'var(--buy)':s.t==='sell'?'var(--sell)':'var(--muted)',minWidth:70,flexShrink:0}}>{s.l}</span>
+                <span style={{color:'var(--muted)',minWidth:55,flexShrink:0,fontFamily:'var(--font-mono)',fontSize:10}}>{s.v}</span>
+                <span style={{color:s.t==='buy'?'var(--buy)':s.t==='sell'?'var(--sell)':'var(--text2)',opacity:.85,fontSize:10}}>{s.n}</span>
               </div>
             ))}
           </div>
+        </div>
+      )}
 
-          {/* Signal detail */}
-          {signal?.signals&&(
-            <div>
-              <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:10}}>Segnali tecnici</div>
-              <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                {signal.signals.map((s,i)=>(
-                  <div key={i} style={{display:'grid',gridTemplateColumns:'60px 70px 1fr',gap:12,padding:'6px 12px',borderRadius:4,background:s.t==='buy'?'var(--buy-bg)':s.t==='sell'?'var(--sell-bg)':'var(--surface2)',fontSize:11,color:s.t==='buy'?'var(--buy)':s.t==='sell'?'var(--sell)':'var(--text2)'}}>
-                    <span style={{fontWeight:500}}>{s.l}</span>
-                    <span style={{fontFamily:'var(--font-mono)'}}>{s.v}</span>
-                    <span style={{opacity:.85}}>{s.n}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Short vs Long term */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1px 1fr',gap:20}}>
-            {[
-              {label:'Breve termine',sig:aiAnalysis?.short_signal||signal?.shortTerm||signal?.signal,conf:aiAnalysis?.short_confidence,rationale:aiAnalysis?.short_rationale},
-              {label:'Lungo termine', sig:aiAnalysis?.long_signal||signal?.longTerm||signal?.signal, conf:aiAnalysis?.long_confidence, rationale:aiAnalysis?.long_rationale},
-            ].map((b,i)=>[
-              i===1&&<div key="div" style={{background:'var(--border)'}} />,
-              <div key={b.label}>
-                <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:8}}>{b.label}</div>
-                {b.sig&&<span style={{fontFamily:'var(--font-head)',fontSize:16,fontWeight:700,letterSpacing:2,color:sigColor(b.sig),background:sigBg(b.sig),border:`1px solid ${sigColor(b.sig)}`,borderRadius:3,padding:'5px 14px',display:'inline-block'}}>{b.sig==='BUY'?'ACQUISTA':b.sig==='SELL'?'VENDI':'ATTENDI'}</span>}
-                {b.conf&&<div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>{b.conf}% confidenza</div>}
-                {b.rationale&&<p style={{fontSize:12,color:'var(--text2)',lineHeight:1.6,marginTop:6}}>{b.rationale}</p>}
-              </div>
-            ])}
+      {/* S/R levels */}
+      {candles.sr&&(candles.sr.supports?.length>0||candles.sr.resistances?.length>0)&&(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <div style={{fontSize:9,letterSpacing:2,color:'var(--buy)',textTransform:'uppercase',marginBottom:6}}>Supporti</div>
+            {candles.sr.supports.map((v,i)=><div key={i} style={{fontFamily:'var(--font-mono)',fontSize:12,color:'var(--buy)',padding:'3px 0',borderBottom:'1px solid var(--border)'}}>{v.toFixed(2)}</div>)}
           </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:2,color:'var(--sell)',textTransform:'uppercase',marginBottom:6}}>Resistenze</div>
+            {candles.sr.resistances.map((v,i)=><div key={i} style={{fontFamily:'var(--font-mono)',fontSize:12,color:'var(--sell)',padding:'3px 0',borderBottom:'1px solid var(--border)'}}>{v.toFixed(2)}</div>)}
+          </div>
+        </div>
+      )}
 
-          {/* AI Section */}
-          {aiActive&&(
-            <div style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.15)',borderRadius:6,padding:16}}>
-              <div style={{fontSize:9,letterSpacing:3,color:'var(--accent2)',textTransform:'uppercase',marginBottom:12}}>◈ Analisi AI</div>
-              {aiLoading&&<div style={{display:'flex',alignItems:'center',gap:10,fontSize:12,color:'var(--muted)'}}><div style={{width:16,height:16,border:'2px solid var(--border2)',borderTopColor:'var(--accent)',borderRadius:'50%',animation:'spin .8s linear infinite'}} />Claude sta analizzando...</div>}
-              {aiAnalysis&&(
-                <div style={{display:'flex',flexDirection:'column',gap:14}}>
-                  {aiAnalysis.macro&&<AiBlock label="Contesto Macro" text={aiAnalysis.macro} />}
-                  {aiAnalysis.geopolitical&&<AiBlock label="Geopolitica" text={aiAnalysis.geopolitical} />}
-                  {aiAnalysis.risks?.length>0&&(
-                    <div>
-                      <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>Rischi</div>
-                      {aiAnalysis.risks.map((r,i)=><div key={i} style={{fontSize:12,color:'rgba(244,63,94,0.8)',paddingLeft:12,lineHeight:1.5}}>• {r}</div>)}
-                    </div>
-                  )}
-                  {aiAnalysis.opportunities?.length>0&&(
-                    <div>
-                      <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>Opportunità</div>
-                      {aiAnalysis.opportunities.map((o,i)=><div key={i} style={{fontSize:12,color:'rgba(16,217,138,0.8)',paddingLeft:12,lineHeight:1.5}}>• {o}</div>)}
-                    </div>
-                  )}
-                  {aiAnalysis.pac_suggestion&&(
-                    <div style={{background:'rgba(245,158,11,0.07)',border:'1px solid rgba(245,158,11,0.2)',borderRadius:4,padding:'10px 12px',fontSize:12,color:'var(--hold)',display:'flex',gap:8}}>
-                      <span>◷</span><span>{aiAnalysis.pac_suggestion}</span>
-                    </div>
-                  )}
+      {/* Short vs Long */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1px 1fr',gap:20}}>
+        {[
+          {label:'Breve termine',sig:aiAnalysis?.short_signal||signal?.shortTerm||signal?.signal,conf:aiAnalysis?.short_confidence,rationale:aiAnalysis?.short_rationale},
+          {label:'Lungo termine', sig:aiAnalysis?.long_signal||signal?.longTerm||signal?.signal, conf:aiAnalysis?.long_confidence, rationale:aiAnalysis?.long_rationale},
+        ].map((b,i)=>[
+          i===1&&<div key="div" style={{background:'var(--border)'}} />,
+          <div key={b.label}>
+            <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:8}}>{b.label}</div>
+            {b.sig&&<span style={{fontFamily:'var(--font-head)',fontSize:16,fontWeight:700,letterSpacing:2,color:sigColor(b.sig),background:sigBg(b.sig),border:`1px solid ${sigColor(b.sig)}`,borderRadius:3,padding:'5px 14px',display:'inline-block'}}>{b.sig==='BUY'?'ACQUISTA':b.sig==='SELL'?'VENDI':'ATTENDI'}</span>}
+            {b.conf&&<div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>{b.conf}% confidenza</div>}
+            {b.rationale&&<p style={{fontSize:12,color:'var(--text2)',lineHeight:1.6,marginTop:6}}>{b.rationale}</p>}
+          </div>
+        ])}
+      </div>
+
+      {/* AI */}
+      {aiActive&&(
+        <div style={{background:'rgba(59,130,246,0.04)',border:'1px solid rgba(59,130,246,0.15)',borderRadius:6,padding:16}}>
+          <div style={{fontSize:9,letterSpacing:3,color:'var(--accent2)',textTransform:'uppercase',marginBottom:12}}>◈ Analisi AI</div>
+          {aiLoading&&<div style={{display:'flex',alignItems:'center',gap:10,fontSize:12,color:'var(--muted)'}}><div style={{width:16,height:16,border:'2px solid var(--border2)',borderTopColor:'var(--accent)',borderRadius:'50%',animation:'spin .8s linear infinite'}} />Claude sta analizzando...</div>}
+          {aiAnalysis&&(
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              {aiAnalysis.macro&&<AiBlock label="Contesto Macro" text={aiAnalysis.macro} />}
+              {aiAnalysis.geopolitical&&<AiBlock label="Geopolitica" text={aiAnalysis.geopolitical} />}
+              {aiAnalysis.risks?.length>0&&(
+                <div>
+                  <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>Rischi</div>
+                  {aiAnalysis.risks.map((r,i)=><div key={i} style={{fontSize:12,color:'rgba(244,63,94,0.8)',paddingLeft:12,lineHeight:1.5}}>• {r}</div>)}
+                </div>
+              )}
+              {aiAnalysis.opportunities?.length>0&&(
+                <div>
+                  <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>Opportunità</div>
+                  {aiAnalysis.opportunities.map((o,i)=><div key={i} style={{fontSize:12,color:'rgba(16,217,138,0.8)',paddingLeft:12,lineHeight:1.5}}>• {o}</div>)}
+                </div>
+              )}
+              {aiAnalysis.pac_suggestion&&(
+                <div style={{background:'rgba(245,158,11,0.07)',border:'1px solid rgba(245,158,11,0.2)',borderRadius:4,padding:'10px 12px',fontSize:12,color:'var(--hold)',display:'flex',gap:8}}>
+                  <span>◷</span><span>{aiAnalysis.pac_suggestion}</span>
                 </div>
               )}
             </div>
@@ -319,6 +397,49 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
         </div>
       )}
     </div>
+  )
+}
+
+// ── Candlestick chart (custom SVG via recharts ComposedChart trick) ────────────
+function CandlestickChart({data}) {
+  if (!data?.length) return <div style={{height:160,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)',fontSize:12}}>Dati candele non disponibili</div>
+  const w=900, h=160, pad={t:8,b:20,l:50,r:4}
+  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b
+  const vals=[...data.map(d=>d.h),...data.map(d=>d.l)]
+  const mn=Math.min(...vals), mx=Math.max(...vals)
+  const rng=mx-mn||1
+  const toY=v=>pad.t+ih-(v-mn)/rng*ih
+  const cw=Math.max(2,Math.floor(iw/data.length)-2)
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} style={{width:'100%',height:160,display:'block'}}>
+      {/* Y axis labels */}
+      {[0,.25,.5,.75,1].map(p=>{
+        const val=mn+rng*p
+        const y=toY(val)
+        return <g key={p}>
+          <line x1={pad.l-4} y1={y} x2={w-pad.r} y2={y} stroke="var(--border)" strokeWidth={0.5} strokeDasharray="3,3"/>
+          <text x={pad.l-6} y={y+4} fontSize={9} fill="var(--muted)" textAnchor="end">{val.toFixed(2)}</text>
+        </g>
+      })}
+      {/* Candles */}
+      {data.map((d,i)=>{
+        const x=pad.l+i*(iw/data.length)+iw/data.length/2
+        const bull=d.c>=d.o
+        const col=bull?'var(--buy)':'var(--sell)'
+        const bodyT=toY(Math.max(d.o,d.c)), bodyB=toY(Math.min(d.o,d.c))
+        const bodyH=Math.max(1,bodyB-bodyT)
+        return <g key={i}>
+          <line x1={x} y1={toY(d.h)} x2={x} y2={toY(d.l)} stroke={col} strokeWidth={1}/>
+          <rect x={x-cw/2} y={bodyT} width={cw} height={bodyH} fill={bull?col:'none'} stroke={col} strokeWidth={1}/>
+        </g>
+      })}
+      {/* X labels every 10 candles */}
+      {data.filter((_,i)=>i%10===0).map((d,i,arr)=>{
+        const idx=data.indexOf(d)
+        const x=pad.l+idx*(iw/data.length)+iw/data.length/2
+        return <text key={i} x={x} y={h-4} fontSize={8} fill="var(--muted)" textAnchor="middle">{d.t}</text>
+      })}
+    </svg>
   )
 }
 
@@ -751,7 +872,7 @@ function SettingsPage() {
 
 function StatCard({label,value,sub,color,accent}) {
   return (
-    <div style={{background:'var(--surface)',border:`1px solid ${accent?'var(--accent)':'var(--border)'}`,borderRadius:6,padding:'16px 18px',background:accent?'rgba(59,130,246,0.06)':'var(--surface)'}}>
+    <div style={{background:accent?'rgba(59,130,246,0.06)':'var(--surface)',border:`1px solid ${accent?'var(--accent)':'var(--border)'}`,borderRadius:6,padding:'16px 18px'}}>
       <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>{label}</div>
       <div style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700,color:color||'var(--text)'}}>{value}</div>
       {sub&&<div style={{fontSize:11,color:color||'var(--muted)',marginTop:3}}>{sub}</div>}
