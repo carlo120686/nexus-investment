@@ -1,37 +1,94 @@
-// ─── Unified market data + technical indicators ───────────────────────────────
-// Crypto  → Finnhub  (BINANCE:BTCUSDT)
-// ETF     → Yahoo Finance (VWCE.DE)
-// Commodity → Yahoo Finance (GC=F futures)
+// Unified market data + technical indicators
+// Crypto  -> Finnhub  (BINANCE:BTCUSDT)
+// ETF     -> Yahoo Finance (.DE Xetra in EUR, preferred)
+// Commodity -> Yahoo Finance (GC=F futures)
 
-// ── Symbol routing ────────────────────────────────────────────────────────────
+// Symbol routing - Borsa Italiana (.MI) priority for ISP/Italian brokers, .DE fallback
 const YAHOO_MAP = {
-  'VWCE:XETRA':'VWCE.DE','SWDA:XETRA':'SWDA.L','WEBG:XETRA':'WEBG.DE',
-  'ISAC:XETRA':'ISAC.L','IMWD:XETRA':'IMWD.L','IUSQ:XETRA':'IUSQ.DE',
-  'CSPX:XETRA':'CSPX.L','VUAA:XETRA':'VUAA.DE','SXR8:XETRA':'SXR8.DE',
-  'IUSP:XETRA':'IUSP.L','ZPRV:XETRA':'ZPRV.DE','EQQQ:XETRA':'EQQQ.DE',
-  'CSNDX:XETRA':'CSNDX.SW','SUSA:XETRA':'SUSA.L','EXSA:XETRA':'EXS2.DE',
-  'MEUD:XETRA':'MEUD.PA','EXS1:XETRA':'EXS1.DE','SPYW:XETRA':'SPYW.DE',
-  'XEON:XETRA':'XEON.DE','ISF:XETRA':'ISF.L','IMEA:XETRA':'IMEA.L',
-  'IEMA:XETRA':'IEMA.L','VFEM:XETRA':'VFEM.L','AEEM:XETRA':'AEEM.PA',
-  'XCHA:XETRA':'XCHA.DE','CJPA:XETRA':'CJPA.L','PAASI:XETRA':'PAASI.L',
-  'VNAM:XETRA':'VNAM.L','QDVE:XETRA':'QDVE.DE','IUFS:XETRA':'IUFS.L',
-  'IUHS:XETRA':'IUHS.L','IUES:XETRA':'IUES.L','IUCM:XETRA':'IUCM.L',
-  'IUIS:XETRA':'IUIS.L','EXV1:XETRA':'EXV1.DE','IPRP:XETRA':'IPRP.L',
-  'WTAI:XETRA':'WTAI.L','LOCK:XETRA':'LOCK.L','ROBO:XETRA':'ROBO.L',
-  'IQQH:XETRA':'IQQH.DE','CEMG:XETRA':'SMH','BATE:XETRA':'BATE.L',
-  'ESPO:XETRA':'ESPO','RENW:XETRA':'RENW.L',
-  'BTCE:XETRA':'BTCE.DE','ZETH:XETRA':'ZETH.DE',
+  // ETF Globali
+  'VWCE:XETRA':'VWCE.MI',
+  'SWDA:XETRA':'SWDA.MI',
+  'WEBG:XETRA':'WEBG.MI',
+  'ISAC:XETRA':'ISAC.MI',
+  'IMWD:XETRA':'IMWD.MI',
+  'IUSQ:XETRA':'IUSQ.MI',
+  // ETF USA
+  'CSPX:XETRA':'CSPX.MI',
+  'VUAA:XETRA':'VUAA.MI',
+  'SXR8:XETRA':'SXR8.MI',
+  'IUSP:XETRA':'IUSP.MI',
+  'ZPRV:XETRA':'ZPRV.MI',
+  'EQQQ:XETRA':'EQQQ.MI',
+  'CSNDX:XETRA':'CSNDX.MI',
+  'SUSA:XETRA':'SUSA.MI',
+  // ETF Europa
+  'EXSA:XETRA':'EXSA.MI',
+  'MEUD:XETRA':'MEUD.MI',
+  'EXS1:XETRA':'EXS1.MI',
+  'SPYW:XETRA':'SPYW.MI',
+  'XEON:XETRA':'XEON.MI',
+  'ISF:XETRA':'ISF.MI',
+  'IMEA:XETRA':'IMEA.MI',
+  // ETF Emergenti
+  'IEMA:XETRA':'IEMA.MI',
+  'VFEM:XETRA':'VFEM.MI',
+  'AEEM:XETRA':'AEEM.MI',
+  'XCHA:XETRA':'XCHA.MI',
+  'CJPA:XETRA':'CJPA.MI',
+  'PAASI:XETRA':'PAASI.MI',
+  'VNAM:XETRA':'VNAM.MI',
+  // ETF Settoriali
+  'QDVE:XETRA':'QDVE.MI',
+  'IUFS:XETRA':'IUFS.MI',
+  'IUHS:XETRA':'IUHS.MI',
+  'IUES:XETRA':'IUES.MI',
+  'IUCM:XETRA':'IUCM.MI',
+  'IUIS:XETRA':'IUIS.MI',
+  'EXV1:XETRA':'EXV1.MI',
+  'IPRP:XETRA':'IPRP.MI',
+  // ETF Tematici
+  'WTAI:XETRA':'WTAI.MI',
+  'LOCK:XETRA':'LOCK.MI',
+  'ROBO:XETRA':'ROBO.MI',
+  'IQQH:XETRA':'IQQH.MI',
+  'CEMG:XETRA':'CEMG.MI',
+  'BATE:XETRA':'BATE.MI',
+  'ESPO:XETRA':'ESPO.MI',
+  'RENW:XETRA':'RENW.MI',
+  'BTCE:XETRA':'BTCE.MI',
+  'ZETH:XETRA':'ZETH.MI',
   // Commodities
-  'OANDA:XAUUSD':'GC=F','OANDA:XAGUSD':'SI=F','OANDA:XPTUSD':'PL=F',
-  'OANDA:XPDUSD':'PA=F','OANDA:BCOUSD':'BZ=F','OANDA:WTICOUSD':'CL=F',
-  'OANDA:NATGASUSD':'NG=F','COAL:NYMEX':'MTF=F','OANDA:XCUUSD':'HG=F',
-  'OANDA:ALUUSD':'ALI=F','OANDA:XNIUSD':'NI=F','OANDA:XZNUSD':'ZNC=F',
-  'OANDA:WHEATUSD':'ZW=F','OANDA:CORNUSD':'ZC=F','OANDA:SOYBNUSD':'ZS=F',
-  'OANDA:COFFEEUSD':'KC=F','OANDA:COCOAUSD':'CC=F','OANDA:SUGARUSD':'SB=F',
+  'OANDA:XAUUSD':'GC=F',
+  'OANDA:XAGUSD':'SI=F',
+  'OANDA:XPTUSD':'PL=F',
+  'OANDA:XPDUSD':'PA=F',
+  'OANDA:BCOUSD':'BZ=F',
+  'OANDA:WTICOUSD':'CL=F',
+  'OANDA:NATGASUSD':'NG=F',
+  'COAL:NYMEX':'MTF=F',
+  'OANDA:XCUUSD':'HG=F',
+  'OANDA:ALUUSD':'ALI=F',
+  'OANDA:XNIUSD':'NI=F',
+  'OANDA:XZNUSD':'ZNC=F',
+  'OANDA:WHEATUSD':'ZW=F',
+  'OANDA:CORNUSD':'ZC=F',
+  'OANDA:SOYBNUSD':'ZS=F',
+  'OANDA:COFFEEUSD':'KC=F',
+  'OANDA:COCOAUSD':'CC=F',
+  'OANDA:SUGARUSD':'SB=F',
 }
 
 const isCrypto  = s => s.startsWith('BINANCE:') || s.startsWith('COINBASE:')
 const yahooTick = s => YAHOO_MAP[s] || null
+// GBX (pence) -> GBP: divide by 100
+const fixGBX = (v, currency) => currency === 'GBp' || currency === 'GBX' ? v / 100 : v
+// Fallback: if .MI not found, try .DE
+const yahooTickFallback = s => {
+  const t = YAHOO_MAP[s]
+  if (!t) return []
+  if (t.endsWith('.MI')) return [t, t.replace('.MI', '.DE')]
+  return [t]
+}
 
 // Yahoo Finance via CORS proxy
 async function yahooFetch(ticker, range='6mo') {
@@ -70,21 +127,23 @@ export async function fetchQuote(symbol, key) {
       if (!d.c) return { ok:false, error:'No data' }
       return { ok:true, current:d.c, change:d.dp, high:d.h, low:d.l, open:d.o, prevClose:d.pc }
     }
-    const ticker = yahooTick(symbol)
-    if (!ticker) return { ok:false, error:'Symbol not mapped' }
-    const res = await yahooFetch(ticker, '5d')
+    const tickers = yahooTickFallback(symbol)
+    if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
+    let res = null
+    for (const t of tickers) { res = await yahooFetch(t, '5d'); if (res) break }
     if (!res) return { ok:false, error:'Yahoo unavailable' }
     const meta = res.meta
-    const cur  = meta.regularMarketPrice
-    const prev = meta.chartPreviousClose || meta.previousClose || cur
+    const ccy  = meta.currency || 'USD'
+    const cur  = fixGBX(meta.regularMarketPrice, ccy)
+    const prev = fixGBX(meta.chartPreviousClose || meta.previousClose || meta.regularMarketPrice, ccy)
     return {
       ok:true, current:cur,
       change: prev ? (cur-prev)/prev*100 : 0,
-      high:   meta.regularMarketDayHigh   || cur,
-      low:    meta.regularMarketDayLow    || cur,
-      open:   meta.regularMarketOpen      || cur,
+      high:   fixGBX(meta.regularMarketDayHigh  || meta.regularMarketPrice, ccy),
+      low:    fixGBX(meta.regularMarketDayLow   || meta.regularMarketPrice, ccy),
+      open:   fixGBX(meta.regularMarketOpen     || meta.regularMarketPrice, ccy),
       prevClose: prev,
-      currency: meta.currency || 'USD',
+      currency: ccy === 'GBp' ? 'GBP' : ccy,
     }
   } catch(e) { return { ok:false, error:e.message } }
 }
@@ -101,10 +160,11 @@ export async function fetchCandles(symbol, key, days=120) {
       closes = d.c; highs = d.h; lows = d.l; volumes = d.v||[]; timestamps = d.t||[]
       ohlc = closes.map((_,i)=>({ t:timestamps[i], o:d.o[i], h:highs[i], l:lows[i], c:closes[i], v:volumes[i]||0 }))
     } else {
-      const ticker = yahooTick(symbol)
-      if (!ticker) return { ok:false, error:'Symbol not mapped' }
+      const tickers = yahooTickFallback(symbol)
+      if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
       const range = days > 180 ? '1y' : days > 60 ? '6mo' : '3mo'
-      const res = await yahooFetch(ticker, range)
+      let res = null
+      for (const t of tickers) { res = await yahooFetch(t, range); if (res) break }
       if (!res) return { ok:false, error:'Yahoo unavailable' }
       const q = res.indicators?.quote?.[0]
       if (!q?.close) return { ok:false, error:'No candle data' }
