@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { SettingsProvider, useSettings } from './store/settings.js'
+import { SettingsProvider, useSettings } from './store/settings.jsx'
 import { ETF_LIST, COMMODITY_LIST, CRYPTO_LIST, ALL_ASSETS, TABS } from './services/assets.js'
 import { fetchQuote, fetchCandles, calcSignal } from './services/finnhub.js'
 import { analyzeAsset, analyzePortfolio } from './services/ai.js'
