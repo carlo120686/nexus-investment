@@ -527,10 +527,10 @@ function PACPage() {
 
         <div style={{display:'flex',flexDirection:'column',gap:20}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
-            <StatCard label="Valore finale" value={`€ ${result.finalValue.toLocaleString('it-IT')}`} accent />
-            <StatCard label="Totale investito" value={`€ ${result.finalInvested.toLocaleString('it-IT')}`} />
-            <StatCard label="Guadagno" value={`+€ ${result.totalGain.toLocaleString('it-IT')}`} sub={`+${result.gainPct}%`} color="var(--buy)" />
-            <StatCard label="Valore reale" value={`€ ${result.realValue.toLocaleString('it-IT')}`} sub="adj. inflazione" />
+            < label="Valore finale" value={`€ ${result.finalValue.toLocaleString('it-IT')}`} accent />
+            < label="Totale investito" value={`€ ${result.finalInvested.toLocaleString('it-IT')}`} />
+            < label="Guadagno" value={`+€ ${result.totalGain.toLocaleString('it-IT')}`} sub={`+${result.gainPct}%`} color="var(--buy)" />
+            < label="Valore reale" value={`€ ${result.realValue.toLocaleString('it-IT')}`} sub="adj. inflazione" />
           </div>
 
           <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:20}}>
@@ -751,7 +751,7 @@ function SettingsPage() {
 
 function StatCard({label,value,sub,color,accent}) {
   return (
-    <div style={{background:'var(--surface)',border:`1px solid ${accent?'var(--accent)':'var(--border)'}`,borderRadius:6,padding:'16px 18px',background:accent?'rgba(59,130,246,0.06)':'var(--surface)'}}>
+    <div style={{background:accent?'rgba(59,130,246,0.06)':'var(--surface)',border:`1px solid ${accent?'var(--accent)':'var(--border)'}`,borderRadius:6,padding:'16px 18px'}}>
       <div style={{fontSize:9,letterSpacing:2,color:'var(--muted)',textTransform:'uppercase',marginBottom:6}}>{label}</div>
       <div style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700,color:color||'var(--text)'}}>{value}</div>
       {sub&&<div style={{fontSize:11,color:color||'var(--muted)',marginTop:3}}>{sub}</div>}
