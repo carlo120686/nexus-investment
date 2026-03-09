@@ -1,48 +1,46 @@
-export const ASSETS = {
-  etf: [
-    { symbol: 'VWCE.MI', name: 'Vanguard FTSE All-World', category: 'Globale', ter: 0.22, acc: true },
-    { symbol: 'SWDA.MI', name: 'iShares Core MSCI World', category: 'Globale', ter: 0.20, acc: true },
-    { symbol: 'WEBG.MI', name: 'Amundi MSCI World', category: 'Globale', ter: 0.07, acc: true },
-    { symbol: 'ISAC.MI', name: 'iShares MSCI ACWI', category: 'Globale', ter: 0.20, acc: true },
-    { symbol: 'CSPX.MI', name: 'iShares Core S&P 500', category: 'USA', ter: 0.07, acc: true },
-    { symbol: 'VUAA.MI', name: 'Vanguard S&P 500', category: 'USA', ter: 0.07, acc: true },
-    { symbol: 'EQQQ.MI', name: 'Invesco NASDAQ 100', category: 'USA Tech', ter: 0.30, acc: false },
-    { symbol: 'CSNDX.MI', name: 'iShares NASDAQ 100', category: 'USA Tech', ter: 0.33, acc: true },
-    { symbol: 'EXSA.MI', name: 'iShares Core EURO STOXX 50', category: 'Europa', ter: 0.10, acc: false },
-    { symbol: 'MEUD.MI', name: 'Lyxor Core MSCI EMU', category: 'Europa', ter: 0.12, acc: true },
-    { symbol: 'SPYW.MI', name: 'SPDR S&P Euro Dividend', category: 'Europa Div.', ter: 0.30, acc: false },
-    { symbol: 'IEMA.MI', name: 'iShares Core MSCI EM IMI', category: 'Emergenti', ter: 0.18, acc: true },
-    { symbol: 'VFEM.MI', name: 'Vanguard FTSE Emerging', category: 'Emergenti', ter: 0.22, acc: false },
-    { symbol: 'CJPA.MI', name: 'Amundi Japan', category: 'Giappone', ter: 0.12, acc: true },
-    { symbol: 'QDVE.MI', name: 'iShares S&P500 IT Sector', category: 'Tech', ter: 0.15, acc: true },
-    { symbol: 'IUFS.MI', name: 'iShares S&P500 Financials', category: 'Finanza', ter: 0.15, acc: true },
-    { symbol: 'IUHS.MI', name: 'iShares S&P500 Healthcare', category: 'Healthcare', ter: 0.15, acc: true },
-    { symbol: 'WTAI.MI', name: 'WisdomTree AI & Innovation', category: 'AI', ter: 0.40, acc: true },
-    { symbol: 'IQQH.MI', name: 'iShares Global Clean Energy', category: 'Green', ter: 0.65, acc: true },
-    { symbol: 'ROBO.MI', name: 'iShares Automation & Rob.', category: 'Robotica', ter: 0.40, acc: true },
-  ],
-  commodities: [
-    { symbol: 'GC=F', name: 'Oro', category: 'Metalli Preziosi', unit: 'oz' },
-    { symbol: 'SI=F', name: 'Argento', category: 'Metalli Preziosi', unit: 'oz' },
-    { symbol: 'PL=F', name: 'Platino', category: 'Metalli Preziosi', unit: 'oz' },
-    { symbol: 'HG=F', name: 'Rame', category: 'Metalli Industriali', unit: 'lb' },
-    { symbol: 'CL=F', name: 'Petrolio WTI', category: 'Energia', unit: 'barrel' },
-    { symbol: 'BZ=F', name: 'Petrolio Brent', category: 'Energia', unit: 'barrel' },
-    { symbol: 'NG=F', name: 'Gas Naturale', category: 'Energia', unit: 'MMBtu' },
-    { symbol: 'ZW=F', name: 'Grano', category: 'Agricoltura', unit: 'bushel' },
-    { symbol: 'ZC=F', name: 'Mais', category: 'Agricoltura', unit: 'bushel' },
-    { symbol: 'ZS=F', name: 'Soia', category: 'Agricoltura', unit: 'bushel' },
-  ],
-  crypto: [
-    { symbol: 'BTC-USD', name: 'Bitcoin', category: 'Layer 1', binance: 'BTCUSDT' },
-    { symbol: 'ETH-USD', name: 'Ethereum', category: 'Layer 1', binance: 'ETHUSDT' },
-    { symbol: 'SOL-USD', name: 'Solana', category: 'Layer 1', binance: 'SOLUSDT' },
-    { symbol: 'BNB-USD', name: 'BNB', category: 'Exchange', binance: 'BNBUSDT' },
-  ]
-}
+// Database asset — simboli Finnhub
 
-export const ALL_ASSETS = [
-  ...ASSETS.etf.map(a => ({ ...a, type: 'etf' })),
-  ...ASSETS.commodities.map(a => ({ ...a, type: 'commodity' })),
-  ...ASSETS.crypto.map(a => ({ ...a, type: 'crypto' })),
+export const ETF_LIST = [
+  { id: 'vwce',  symbol: 'VWCE:XETRA', name: 'Vanguard FTSE All-World',        ter: 0.22, category: 'globale',    type: 'ETF' },
+  { id: 'swda',  symbol: 'SWDA:XETRA', name: 'iShares Core MSCI World',         ter: 0.20, category: 'globale',    type: 'ETF' },
+  { id: 'webg',  symbol: 'WEBG:XETRA', name: 'Amundi Prime All Country World',  ter: 0.07, category: 'globale',    type: 'ETF' },
+  { id: 'cspx',  symbol: 'CSPX:XETRA', name: 'iShares Core S&P 500',           ter: 0.07, category: 'usa',        type: 'ETF' },
+  { id: 'vuaa',  symbol: 'VUAA:XETRA', name: 'Vanguard S&P 500',               ter: 0.07, category: 'usa',        type: 'ETF' },
+  { id: 'eqqq',  symbol: 'EQQQ:XETRA', name: 'Invesco Nasdaq 100',             ter: 0.30, category: 'usa',        type: 'ETF' },
+  { id: 'sxr8',  symbol: 'SXR8:XETRA', name: 'iShares Core S&P 500 EUR Hdg',  ter: 0.10, category: 'usa',        type: 'ETF' },
+  { id: 'exsa',  symbol: 'EXSA:XETRA', name: 'iShares Core EURO STOXX 50',     ter: 0.10, category: 'europa',     type: 'ETF' },
+  { id: 'meud',  symbol: 'MEUD:XETRA', name: 'Lyxor EuroStoxx 600',            ter: 0.07, category: 'europa',     type: 'ETF' },
+  { id: 'exs1',  symbol: 'EXS1:XETRA', name: 'iShares Core DAX',               ter: 0.16, category: 'europa',     type: 'ETF' },
+  { id: 'spyw',  symbol: 'SPYW:XETRA', name: 'SPDR Europe Dividend Aristocr',  ter: 0.30, category: 'europa',     type: 'ETF' },
+  { id: 'iema',  symbol: 'IEMA:XETRA', name: 'iShares Core MSCI EM IMI',       ter: 0.18, category: 'emergenti',  type: 'ETF' },
+  { id: 'vfem',  symbol: 'VFEM:XETRA', name: 'Vanguard FTSE Emerging Markets', ter: 0.22, category: 'emergenti',  type: 'ETF' },
+  { id: 'cjpa',  symbol: 'CJPA:XETRA', name: 'iShares Core MSCI Japan IMI',    ter: 0.15, category: 'emergenti',  type: 'ETF' },
+  { id: 'xcha',  symbol: 'XCHA:XETRA', name: 'Xtrackers MSCI China',           ter: 0.20, category: 'emergenti',  type: 'ETF' },
+  { id: 'qdve',  symbol: 'QDVE:XETRA', name: 'iShares S&P 500 Info Tech',      ter: 0.15, category: 'settoriale', type: 'ETF' },
+  { id: 'iuhs',  symbol: 'IUHS:XETRA', name: 'iShares S&P 500 Health Care',    ter: 0.15, category: 'settoriale', type: 'ETF' },
+  { id: 'exv1',  symbol: 'EXV1:XETRA', name: 'iShares STOXX Europe 600 Banks', ter: 0.46, category: 'settoriale', type: 'ETF' },
+  { id: 'wtai',  symbol: 'WTAI:XETRA', name: 'WisdomTree AI & Innovation',     ter: 0.40, category: 'tematico',   type: 'ETF' },
+  { id: 'lock',  symbol: 'LOCK:XETRA', name: 'iShares Digital Security',       ter: 0.40, category: 'tematico',   type: 'ETF' },
+  { id: 'robo',  symbol: 'ROBO:XETRA', name: 'iShares Automation & Robotics',  ter: 0.40, category: 'tematico',   type: 'ETF' },
+  { id: 'iqqh',  symbol: 'IQQH:XETRA', name: 'iShares Global Clean Energy',    ter: 0.65, category: 'tematico',   type: 'ETF' },
+  { id: 'cemg',  symbol: 'CEMG:XETRA', name: 'VanEck Semiconductor',           ter: 0.35, category: 'tematico',   type: 'ETF' },
+  { id: 'bate',  symbol: 'BATE:XETRA', name: 'WisdomTree Battery Solutions',   ter: 0.40, category: 'tematico',   type: 'ETF' },
 ]
+
+export const COMMODITY_LIST = [
+  { id: 'gold',   symbol: 'OANDA:XAUUSD',    name: 'Oro',            icon: '🥇', type: 'Commodity', desc: 'Safe haven & inflazione' },
+  { id: 'silver', symbol: 'OANDA:XAGUSD',    name: 'Argento',        icon: '🥈', type: 'Commodity', desc: 'Metallo prezioso industriale' },
+  { id: 'oil',    symbol: 'OANDA:BCOUSD',    name: 'Petrolio Brent', icon: '🛢️', type: 'Commodity', desc: 'Greggio europeo benchmark' },
+  { id: 'natgas', symbol: 'OANDA:NATGASUSD', name: 'Gas Naturale',   icon: '🔥', type: 'Commodity', desc: 'Energia & geopolitica EU' },
+  { id: 'copper', symbol: 'OANDA:XCUUSD',    name: 'Rame',           icon: '⚙️', type: 'Commodity', desc: 'Barometro economia globale' },
+  { id: 'wheat',  symbol: 'OANDA:WHEATUSD',  name: 'Grano',          icon: '🌾', type: 'Commodity', desc: 'Commodity agricola' },
+]
+
+export const CRYPTO_LIST = [
+  { id: 'btc', symbol: 'BINANCE:BTCUSDT', name: 'Bitcoin',  icon: '₿',  type: 'Crypto', desc: 'Prima criptovaluta per cap.' },
+  { id: 'eth', symbol: 'BINANCE:ETHUSDT', name: 'Ethereum', icon: '⟠',  type: 'Crypto', desc: 'Smart contract e DeFi' },
+  { id: 'sol', symbol: 'BINANCE:SOLUSDT', name: 'Solana',   icon: '◎',  type: 'Crypto', desc: 'Layer 1 ad alta velocità' },
+  { id: 'bnb', symbol: 'BINANCE:BNBUSDT', name: 'BNB',      icon: '🔶', type: 'Crypto', desc: 'Token Binance exchange' },
+]
+
+export const ALL_ASSETS = [...ETF_LIST, ...COMMODITY_LIST, ...CRYPTO_LIST]
