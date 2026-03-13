@@ -90,19 +90,34 @@ const yahooTickFallback = s => {
   return [t]
 }
 
-// Yahoo Finance via CORS proxy
-async function yahooFetch(ticker, range='6mo') {
-  const yahoo = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}`
+// Yahoo Finance via CORS proxy — lista aggiornata con fallback robusto
+async function yahooFetch(ticker, range = '6mo') {
+  const yahoo = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=${range}&includePrePost=false`
+  
   const proxies = [
+    // Proxy 1: thingproxy (funziona ancora, nessun blocco Yahoo)
+    `https://thingproxy.freeboard.io/fetch/${yahoo}`,
+    // Proxy 2: allorigins con query2 invece di query1
     `https://api.allorigins.win/raw?url=${encodeURIComponent(yahoo)}`,
-    `https://corsproxy.io/?${encodeURIComponent(yahoo)}`,
+    // Proxy 3: codetabs
     `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahoo)}`,
+    // Proxy 4: corsproxy.io
+    `https://corsproxy.io/?${encodeURIComponent(yahoo)}`,
+    // Proxy 5: bypass con headers diversi via workers cloudflare
+    `https://api.allorigins.win/get?url=${encodeURIComponent(yahoo)}`,
   ]
+
   for (const url of proxies) {
     try {
-      const r = await fetch(url)
+      const r = await fetch(url, { signal: AbortSignal.timeout(8000) })
       if (!r.ok) continue
-      const d = await r.json()
+      const text = await r.text()
+      // allorigins /get wrappa in {contents:"..."}
+      let d
+      try { d = JSON.parse(text) } catch { continue }
+      if (d?.contents) {
+        try { d = JSON.parse(d.contents) } catch { continue }
+      }
       const res = d?.chart?.result?.[0]
       if (!res) continue
       return res
