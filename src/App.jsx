@@ -112,6 +112,14 @@ function MarketPage() {
     setData(p=>({...p,[asset.id]:{quote,candles,signal,loading:false}}))
   }, [s.finnhubKey, data])
 
+  const reloadCandles = useCallback(async (asset, days) => {
+    if (!s.finnhubKey) return
+    setData(p=>({...p,[asset.id]:{...p[asset.id],candleLoading:true}}))
+    const candles = await fetchCandles(asset.symbol, s.finnhubKey, days)
+    const signal = calcSignal(data[asset.id]?.quote, candles)
+    setData(p=>({...p,[asset.id]:{...p[asset.id],candles,signal,candleLoading:false}}))
+  }, [s.finnhubKey, data])
+
   const loadAI = useCallback(async (asset) => {
     if (!aiActive) return
     const d = data[asset.id]
@@ -142,7 +150,6 @@ function MarketPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{display:'flex',gap:4,borderBottom:'1px solid var(--border)',marginBottom:16}}>
         {TABS.map(t=>(
           <button key={t.id} onClick={()=>{setTab(t.id);setSearch('');setCatFilter('Tutti');setExpanded(null)}} style={{background:'transparent',border:'none',borderBottom:tab===t.id?'2px solid var(--accent)':'2px solid transparent',color:tab===t.id?'var(--text)':'var(--muted)',fontFamily:'var(--font-head)',fontSize:14,fontWeight:600,letterSpacing:1,padding:'10px 18px',cursor:'pointer',marginBottom:-1,display:'flex',alignItems:'center',gap:7}}>
@@ -152,7 +159,6 @@ function MarketPage() {
         ))}
       </div>
 
-      {/* Category filter */}
       <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:20}}>
         {categories.map(c=>(
           <button key={c} onClick={()=>setCatFilter(c)} style={{background:catFilter===c?'var(--accent)':'var(--surface)',border:'1px solid',borderColor:catFilter===c?'var(--accent)':'var(--border)',color:catFilter===c?'white':'var(--text2)',fontFamily:'var(--font-mono)',fontSize:10,padding:'4px 12px',borderRadius:20,cursor:'pointer',letterSpacing:1}}>
@@ -161,10 +167,9 @@ function MarketPage() {
         ))}
       </div>
 
-      {/* Asset list */}
       <div style={{display:'flex',flexDirection:'column',gap:6}}>
         {filtered.map(asset=>(
-          <AssetRow key={asset.id} asset={asset} data={data[asset.id]} expanded={expanded===asset.id} onExpand={()=>handleExpand(asset)} onVisible={()=>loadAsset(asset)} aiActive={aiActive} />
+          <AssetRow key={asset.id} asset={asset} data={data[asset.id]} expanded={expanded===asset.id} onExpand={()=>handleExpand(asset)} onVisible={()=>loadAsset(asset)} aiActive={aiActive} onReload={(days)=>reloadCandles(asset,days)} />
         ))}
       </div>
     </div>
@@ -173,7 +178,7 @@ function MarketPage() {
 
 // ─── ASSET ROW ───────────────────────────────────────────────────────────────
 
-function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
+function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive, onReload}) {
   const ref = useRef(null)
   useEffect(()=>{
     const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)onVisible()},{threshold:0.1})
@@ -181,7 +186,7 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
     return()=>obs.disconnect()
   },[])
 
-  const {quote,candles,signal,aiAnalysis,loading,aiLoading} = data||{}
+  const {quote,candles,signal,aiAnalysis,loading,aiLoading,candleLoading} = data||{}
   const hasData = quote?.ok
 
   const sigColor = (sig) => sig==='BUY'?'var(--buy)':sig==='SELL'?'var(--sell)':'var(--hold)'
@@ -189,7 +194,6 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
 
   return (
     <div ref={ref} style={{background:'var(--surface)',border:`1px solid ${expanded?'var(--accent)':'var(--border)'}`,borderRadius:6,overflow:'hidden',transition:'border-color .2s'}}>
-      {/* Header */}
       <div onClick={onExpand} style={{display:'grid',gridTemplateColumns:'1fr 160px 130px 24px',alignItems:'center',gap:16,padding:'12px 18px',cursor:'pointer',userSelect:'none'}}>
         <div>
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
@@ -216,7 +220,7 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
           {loading&&<><div className="skeleton" style={{height:18,width:80,marginLeft:'auto',marginBottom:4}} /><div className="skeleton" style={{height:12,width:50,marginLeft:'auto'}} /></>}
           {hasData&&(
             <>
-              <div style={{fontFamily:'var(--font-head)',fontSize:17,fontWeight:600,color:'var(--text)'}}>{quote.current?.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:asset.type==='Crypto'?2:2})}</div>
+              <div style={{fontFamily:'var(--font-head)',fontSize:17,fontWeight:600,color:'var(--text)'}}>{quote.current?.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
               <div style={{fontFamily:'var(--font-mono)',fontSize:11,color:quote.change>=0?'var(--buy)':'var(--sell)'}}>{quote.change>=0?'+':''}{quote.change?.toFixed(2)}%</div>
               {signal&&(
                 <span style={{fontFamily:'var(--font-head)',fontSize:9,letterSpacing:1.5,fontWeight:700,color:sigColor(aiAnalysis?.short_signal||signal.shortTerm||signal.signal),background:sigBg(aiAnalysis?.short_signal||signal.shortTerm||signal.signal),border:`1px solid ${sigColor(aiAnalysis?.short_signal||signal.shortTerm||signal.signal)}`,borderRadius:3,padding:'2px 7px',display:'inline-block',marginTop:3}}>
@@ -230,16 +234,24 @@ function AssetRow({asset, data, expanded, onExpand, onVisible, aiActive}) {
         <div style={{fontSize:10,color:'var(--muted)',textAlign:'center'}}>{expanded?'▲':'▼'}</div>
       </div>
 
-      {/* Detail panel */}
       {expanded&&hasData&&(
-        <DetailPanel candles={candles} quote={quote} signal={signal} aiAnalysis={aiAnalysis} aiLoading={aiLoading} aiActive={aiActive} />
+        <DetailPanel candles={candles} quote={quote} signal={signal} aiAnalysis={aiAnalysis} aiLoading={aiLoading} aiActive={aiActive} onReload={onReload} candleLoading={candleLoading} />
       )}
     </div>
   )
 }
 
-function DetailPanel({candles, quote, signal, aiAnalysis, aiLoading, aiActive}) {
-  const [chartType, setChartType] = useState('area') // 'area' | 'candle'
+// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
+
+function DetailPanel({candles, quote, signal, aiAnalysis, aiLoading, aiActive, onReload, candleLoading}) {
+  const [chartType, setChartType] = useState('area')
+  const [days, setDays] = useState(60)
+
+  const handleDays = (d) => {
+    setDays(d)
+    onReload(d)
+  }
+
   const sigColor = s => s==='BUY'?'var(--buy)':s==='SELL'?'var(--sell)':'var(--hold)'
   const sigBg    = s => s==='BUY'?'var(--buy-bg)':s==='SELL'?'var(--sell-bg)':'var(--hold-bg)'
   const indColor = (v, low, hi) => v==null?'var(--text2)':v<=low?'var(--buy)':v>=hi?'var(--sell)':'var(--text2)'
@@ -274,18 +286,31 @@ function DetailPanel({candles, quote, signal, aiAnalysis, aiLoading, aiActive}) 
   return (
     <div style={{borderTop:'1px solid var(--border)',padding:'20px 18px',display:'flex',flexDirection:'column',gap:20}}>
 
-      {/* Chart with toggle */}
+      {/* Chart */}
       <div>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-          <span style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase'}}>Grafico 60 giorni</span>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}}>
+          {/* Sinistra: label + spinner + pulsanti giorni */}
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase'}}>Grafico</span>
+            {candleLoading && <span style={{fontSize:11,color:'var(--muted)',animation:'spin .8s linear infinite',display:'inline-block'}}>⟳</span>}
+            <div style={{display:'flex',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:6,overflow:'hidden'}}>
+              {[15,30,60,180,360].map(d=>(
+                <button key={d} onClick={()=>handleDays(d)} style={{background:days===d?'var(--surface2)':'transparent',border:'none',borderRight:'1px solid var(--border)',color:days===d?'var(--text)':'var(--muted)',fontFamily:'var(--font-mono)',fontSize:10,padding:'5px 10px',cursor:'pointer',letterSpacing:0.5,transition:'all .15s'}}>
+                  {d}g
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Destra: toggle area/candele */}
           <div style={{display:'flex',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:6,overflow:'hidden'}}>
-            {[{id:'area',l:'Area'},{ id:'candle',l:'Candele'}].map(t=>(
+            {[{id:'area',l:'Area'},{id:'candle',l:'Candele'}].map(t=>(
               <button key={t.id} onClick={()=>setChartType(t.id)} style={{background:chartType===t.id?'var(--surface2)':'transparent',border:'none',color:chartType===t.id?'var(--text)':'var(--muted)',fontFamily:'var(--font-mono)',fontSize:10,padding:'5px 14px',cursor:'pointer',letterSpacing:1}}>
                 {t.l}
               </button>
             ))}
           </div>
         </div>
+
         {chartType==='area' ? (
           <ResponsiveContainer width="100%" height={160}>
             <AreaChart data={candles.sparkline} margin={{top:4,right:4,bottom:0,left:0}}>
@@ -400,7 +425,8 @@ function DetailPanel({candles, quote, signal, aiAnalysis, aiLoading, aiActive}) 
   )
 }
 
-// ── Candlestick chart (custom SVG via recharts ComposedChart trick) ────────────
+// ─── CANDLESTICK CHART ────────────────────────────────────────────────────────
+
 function CandlestickChart({data}) {
   if (!data?.length) return <div style={{height:160,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)',fontSize:12}}>Dati candele non disponibili</div>
   const w=900, h=160, pad={t:8,b:20,l:50,r:4}
@@ -412,7 +438,6 @@ function CandlestickChart({data}) {
   const cw=Math.max(2,Math.floor(iw/data.length)-2)
   return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{width:'100%',height:160,display:'block'}}>
-      {/* Y axis labels */}
       {[0,.25,.5,.75,1].map(p=>{
         const val=mn+rng*p
         const y=toY(val)
@@ -421,7 +446,6 @@ function CandlestickChart({data}) {
           <text x={pad.l-6} y={y+4} fontSize={9} fill="var(--muted)" textAnchor="end">{val.toFixed(2)}</text>
         </g>
       })}
-      {/* Candles */}
       {data.map((d,i)=>{
         const x=pad.l+i*(iw/data.length)+iw/data.length/2
         const bull=d.c>=d.o
@@ -433,8 +457,7 @@ function CandlestickChart({data}) {
           <rect x={x-cw/2} y={bodyT} width={cw} height={bodyH} fill={bull?col:'none'} stroke={col} strokeWidth={1}/>
         </g>
       })}
-      {/* X labels every 10 candles */}
-      {data.filter((_,i)=>i%10===0).map((d,i,arr)=>{
+      {data.filter((_,i)=>i%10===0).map((d,i)=>{
         const idx=data.indexOf(d)
         const x=pad.l+idx*(iw/data.length)+iw/data.length/2
         return <text key={i} x={x} y={h-4} fontSize={8} fill="var(--muted)" textAnchor="middle">{d.t}</text>
@@ -504,7 +527,6 @@ function PortfolioPage() {
         </div>
       </div>
 
-      {/* Stats */}
       {holdings.length>0&&(
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:24}}>
           <StatCard label="Valore totale" value={`€ ${stats.totalValue.toLocaleString('it-IT',{maximumFractionDigits:0})}`} />
@@ -514,7 +536,6 @@ function PortfolioPage() {
         </div>
       )}
 
-      {/* Add form */}
       {showAdd&&(
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:20,marginBottom:24}}>
           <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:14}}>Aggiungi posizione</div>
@@ -803,8 +824,6 @@ function SettingsPage() {
       <p style={{fontSize:12,color:'var(--muted)',marginBottom:32}}>Configura le chiavi API e le preferenze</p>
 
       <div style={{display:'flex',flexDirection:'column',gap:24}}>
-
-        {/* Finnhub */}
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:22}}>
           <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:14}}>Finnhub API — Dati di mercato</div>
           <p style={{fontSize:12,color:'var(--text2)',marginBottom:14,lineHeight:1.6}}>Gratuita — 60 chiamate/min. Registrati su <a href="https://finnhub.io/register" target="_blank" rel="noreferrer" style={{color:'var(--accent2)'}}>finnhub.io/register</a></p>
@@ -815,7 +834,6 @@ function SettingsPage() {
           {fk.startsWith('pk_')&&<div style={{fontSize:11,color:'var(--buy)',marginTop:6}}>✓ Formato corretto</div>}
         </div>
 
-        {/* AI Toggle */}
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:22}}>
           <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:14}}>Analisi AI — Opzionale</div>
           <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:16}}>
@@ -839,7 +857,6 @@ function SettingsPage() {
           )}
         </div>
 
-        {/* Status */}
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:6,padding:22}}>
           <div style={{fontSize:9,letterSpacing:3,color:'var(--muted)',textTransform:'uppercase',marginBottom:14}}>Stato attuale</div>
           {[
