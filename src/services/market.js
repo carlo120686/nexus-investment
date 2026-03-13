@@ -2,33 +2,31 @@
 // Crypto  -> Finnhub  (BINANCE:BTCUSDT)
 // ETF     -> Yahoo Finance (.DE Xetra in EUR, preferred)
 // Commodity -> Yahoo Finance (GC=F futures)
+
 // Mappa ISIN → ticker Yahoo (priorità su YAHOO_MAP)
-// Aggiungere qui i ticker per ETF difficili da trovare o con suffisso diverso da .MI
 const ISIN_TO_YAHOO = {
-  'IE00BJ0KDR00': 'XCHA.DE',    // Xtrackers MSCI China
-  'IE00B04GQQ17': 'CJPA.DE',    // iShares Core MSCI Japan IMI
-  'FR0013412285': 'PAASI.PA',   // Amundi PEA Asie Emergente
-  'IE00BTEM1Y91': 'VNAM.DE',    // VanEck Vietnam
-  'IE00B4JNQZ49': 'IUFS.L',    // iShares S&P 500 Financials
-  'IE00B43HR379': 'IUHS.L',    // iShares S&P 500 Health Care
-  'IE00B42SXC22': 'IUES.L',    // iShares S&P 500 Energy
-  'IE00B40B8R38': 'IUCM.L',    // iShares S&P 500 Cons. Staples
-  'DE000A0H08E0': 'EXV1.DE',   // iShares STOXX Europe 600 Banks
-  'IE00B1FZS350': 'IPRP.L',    // iShares European Property
-  'IE00B1XNHC34': 'IQQH.DE',   // iShares Global Clean Energy
-  'DE000A27Z304': 'BTCE.DE',   // ETC Group Bitcoin ETP
-  'CH0445689208': 'ZETH.DE',   // 21Shares Ethereum ETP
+  'IE00BJ0KDR00': 'XCHA.DE',
+  'IE00B04GQQ17': 'CJPA.DE',
+  'FR0013412285': 'PAASI.PA',
+  'IE00BTEM1Y91': 'VNAM.DE',
+  'IE00B4JNQZ49': 'IUFS.L',
+  'IE00B43HR379': 'IUHS.L',
+  'IE00B42SXC22': 'IUES.L',
+  'IE00B40B8R38': 'IUCM.L',
+  'DE000A0H08E0': 'EXV1.DE',
+  'IE00B1FZS350': 'IPRP.L',
+  'IE00B1XNHC34': 'IQQH.DE',
+  'DE000A27Z304': 'BTCE.DE',
+  'CH0445689208': 'ZETH.DE',
 }
-// Symbol routing - Borsa Italiana (.MI) priority for ISP/Italian brokers, .DE fallback
+
 const YAHOO_MAP = {
-  // ETF Globali
   'VWCE:XETRA':'VWCE.MI',
   'SWDA:XETRA':'SWDA.MI',
   'WEBG:XETRA':'WEBG.MI',
   'ISAC:XETRA':'ISAC.MI',
   'IMWD:XETRA':'IMWD.MI',
   'IUSQ:XETRA':'IUSQ.MI',
-  // ETF USA
   'CSPX:XETRA':'CSPX.MI',
   'VUAA:XETRA':'VUAA.MI',
   'SXR8:XETRA':'SXR8.MI',
@@ -37,7 +35,6 @@ const YAHOO_MAP = {
   'EQQQ:XETRA':'EQQQ.MI',
   'CSNDX:XETRA':'CSNDX.MI',
   'SUSA:XETRA':'SUSA.MI',
-  // ETF Europa
   'EXSA:XETRA':'EXSA.MI',
   'MEUD:XETRA':'MEUD.MI',
   'EXS1:XETRA':'EXS1.MI',
@@ -45,35 +42,31 @@ const YAHOO_MAP = {
   'XEON:XETRA':'XEON.MI',
   'ISF:XETRA':'ISF.MI',
   'IMEA:XETRA':'IMEA.MI',
-  // ETF Emergenti
   'IEMA:XETRA':'IEMA.MI',
   'VFEM:XETRA':'VFEM.MI',
   'AEEM:XETRA':'AEEM.MI',
-  'XCHA:XETRA':'XCHA.MI',
-  'CJPA:XETRA':'CJPA.MI',
-  'PAASI:XETRA':'PAASI.MI',
-  'VNAM:XETRA':'VNAM.MI',
-  // ETF Settoriali
+  'XCHA:XETRA':'XCHA.DE',
+  'CJPA:XETRA':'CJPA.DE',
+  'PAASI:XETRA':'PAASI.PA',
+  'VNAM:XETRA':'VNAM.DE',
   'QDVE:XETRA':'QDVE.MI',
-  'IUFS:XETRA':'IUFS.MI',
-  'IUHS:XETRA':'IUHS.MI',
-  'IUES:XETRA':'IUES.MI',
-  'IUCM:XETRA':'IUCM.MI',
-  'IUIS:XETRA':'IUIS.MI',
-  'EXV1:XETRA':'EXV1.MI',
-  'IPRP:XETRA':'IPRP.MI',
-  // ETF Tematici
+  'IUFS:XETRA':'IUFS.L',
+  'IUHS:XETRA':'IUHS.L',
+  'IUES:XETRA':'IUES.L',
+  'IUCM:XETRA':'IUCM.L',
+  'IUIS:XETRA':'IUIS.L',
+  'EXV1:XETRA':'EXV1.DE',
+  'IPRP:XETRA':'IPRP.L',
   'WTAI:XETRA':'WTAI.MI',
   'LOCK:XETRA':'LOCK.MI',
   'ROBO:XETRA':'ROBO.MI',
-  'IQQH:XETRA':'IQQH.MI',
+  'IQQH:XETRA':'IQQH.DE',
   'CEMG:XETRA':'CEMG.MI',
   'BATE:XETRA':'BATE.MI',
   'ESPO:XETRA':'ESPO.MI',
   'RENW:XETRA':'RENW.MI',
-  'BTCE:XETRA':'BTCE.MI',
-  'ZETH:XETRA':'ZETH.MI',
-  // Commodities
+  'BTCE:XETRA':'BTCE.DE',
+  'ZETH:XETRA':'ZETH.DE',
   'OANDA:XAUUSD':'GC=F',
   'OANDA:XAGUSD':'SI=F',
   'OANDA:XPTUSD':'PL=F',
@@ -94,14 +87,10 @@ const YAHOO_MAP = {
   'OANDA:SUGARUSD':'SB=F',
 }
 
-const isCrypto  = s => s.startsWith('BINANCE:') || s.startsWith('COINBASE:')
-const yahooTick = s => YAHOO_MAP[s] || null
-// GBX (pence) -> GBP: divide by 100
+const isCrypto = s => s.startsWith('BINANCE:') || s.startsWith('COINBASE:')
 const fixGBX = (v, currency) => currency === 'GBp' || currency === 'GBX' ? v / 100 : v
-// Fallback: if .MI not found, try .DE
-const yahooTickFallback = (s, isin) => {
-  // Prima cerca per ISIN se disponibile
-  if (isin && ISIN_TO_YAHOO[isin]) return [ISIN_TO_YAHOO[isin]]
+
+const yahooTickFallback = (s) => {
   const t = YAHOO_MAP[s]
   if (!t) return []
   if (t.endsWith('.MI')) return [t, t.replace('.MI', '.DE')]
@@ -121,14 +110,11 @@ async function yahooFetch(ticker, range = '6mo') {
   } catch { return null }
 }
 
-// ── Finnhub ───────────────────────────────────────────────────────────────────
 async function finnhubGet(path, key) {
   const r = await fetch(`https://finnhub.io/api/v1${path}&token=${key}`)
   if (!r.ok) throw new Error(`Finnhub ${r.status}`)
   return r.json()
 }
-
-// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function fetchQuote(symbol, key) {
   try {
@@ -137,7 +123,7 @@ export async function fetchQuote(symbol, key) {
       if (!d.c) return { ok:false, error:'No data' }
       return { ok:true, current:d.c, change:d.dp, high:d.h, low:d.l, open:d.o, prevClose:d.pc }
     }
-    const tickers = yahooTickFallback(symbol, asset?.isin)
+    const tickers = yahooTickFallback(symbol)
     if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
     let res = null
     for (const t of tickers) { res = await yahooFetch(t, '5d'); if (res) break }
@@ -170,7 +156,7 @@ export async function fetchCandles(symbol, key, days=120) {
       closes = d.c; highs = d.h; lows = d.l; volumes = d.v||[]; timestamps = d.t||[]
       ohlc = closes.map((_,i)=>({ t:timestamps[i], o:d.o[i], h:highs[i], l:lows[i], c:closes[i], v:volumes[i]||0 }))
     } else {
-      const tickers = yahooTickFallback(symbol, asset?.isin)
+      const tickers = yahooTickFallback(symbol)
       if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
       const range = days > 180 ? '1y' : days > 60 ? '6mo' : '3mo'
       let res = null
@@ -188,7 +174,6 @@ export async function fetchCandles(symbol, key, days=120) {
 
     if (closes.length < 2) return { ok:false, error:'Insufficient data' }
 
-    // ── Compute all indicators ─────────────────────────────────────────────
     const ind = computeIndicators(closes, highs, lows, volumes, ohlc)
     const cur = closes[closes.length-1]
 
@@ -209,7 +194,6 @@ export async function fetchCandles(symbol, key, days=120) {
   } catch(e) { return { ok:false, error:e.message } }
 }
 
-// ── All 14 indicators ─────────────────────────────────────────────────────────
 function computeIndicators(closes, highs, lows, volumes, ohlc) {
   const sma20 = sma(closes, 20)
   const sma50 = sma(closes, 50)
@@ -234,22 +218,13 @@ function computeIndicators(closes, highs, lows, volumes, ohlc) {
 
   return {
     sma20, sma50, ema9, ema21,
-    rsi: rsiV,
-    macd: macdR,
-    bb: bbR,
-    stoch: stochR,
-    atr: atrV,
-    obv: obvV,
-    vwap: vwapV,
-    ichimoku: ichiR,
-    sr: srR,
-    williamsR: willR,
-    cci: cciV,
+    rsi: rsiV, macd: macdR, bb: bbR, stoch: stochR,
+    atr: atrV, obv: obvV, vwap: vwapV, ichimoku: ichiR,
+    sr: srR, williamsR: willR, cci: cciV,
     trendUp, goldenCross, emaGolden,
   }
 }
 
-// ── Math helpers ─────────────────────────────────────────────────────────────
 const avg = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : null
 
 function sma(c, p) {
@@ -295,7 +270,6 @@ function calcMACD(c) {
   const signal = ema(validMacd, 9)
   const ml = macdLine[macdLine.length-1]
   const histogram = ml - signal
-  // Return last 30 points for chart
   const chartData = macdLine.slice(-30).map((v,i)=>({ i, macd:v, signal:null, hist:null }))
   return { macdLine:ml, signalLine:signal, histogram, signal:ml>signal?'bullish':'bearish', chartData }
 }
@@ -316,7 +290,6 @@ function calcStoch(c, h, l, kp=14, dp=3) {
   const recentH = Math.max(...h.slice(-kp))
   const recentL = Math.min(...l.slice(-kp))
   const k = Math.round((c[c.length-1]-recentL)/((recentH-recentL)||1)*100)
-  // Simple D: average of last dp K values
   const ks = []
   for (let i = Math.max(0, c.length-dp-kp); i <= c.length-kp; i++) {
     const sh = Math.max(...h.slice(i, i+kp))
@@ -372,10 +345,10 @@ function calcVWAP(c, h, l, v) {
 function calcIchimoku(h, l, c) {
   if (h.length < 52) return null
   const mid = (arr, p) => (Math.max(...arr.slice(-p)) + Math.min(...arr.slice(-p))) / 2
-  const tenkan  = mid(h.length>=9  ? h.slice(-9)  : h, Math.min(9,  h.length))  // Conversion line
-  const kijun   = mid(h.length>=26 ? h.slice(-26) : h, Math.min(26, h.length))  // Base line
-  const senkouA = (tenkan + kijun) / 2                                            // Leading span A
-  const senkouB = mid(h.length>=52 ? h.slice(-52) : h, Math.min(52, h.length))  // Leading span B
+  const tenkan  = mid(h.length>=9  ? h.slice(-9)  : h, Math.min(9,  h.length))
+  const kijun   = mid(h.length>=26 ? h.slice(-26) : h, Math.min(26, h.length))
+  const senkouA = (tenkan + kijun) / 2
+  const senkouB = mid(h.length>=52 ? h.slice(-52) : h, Math.min(52, h.length))
   const cur = c[c.length-1]
   const aboveCloud = cur > Math.max(senkouA, senkouB)
   const belowCloud = cur < Math.min(senkouA, senkouB)
@@ -417,7 +390,6 @@ function calcCCI(c, h, l, p=20) {
   return { value: cci, signal }
 }
 
-// ── Signal engine ─────────────────────────────────────────────────────────────
 export function calcSignal(quote, candles) {
   if (!candles?.ok || !quote?.ok) return null
   const { rsi, trendUp, goldenCross, emaGolden, macd, bb, stoch, williamsR, cci, ichimoku, obv, vwap, high52, low52 } = candles
@@ -425,96 +397,82 @@ export function calcSignal(quote, candles) {
   let score = 0
   const signals = []
 
-  // RSI
   if (rsi != null) {
-    if      (rsi < 25) { score+=3; signals.push({l:'RSI',     v:`${rsi}`,      n:'Ipervenduto estremo',  t:'buy'})  }
-    else if (rsi < 35) { score+=2; signals.push({l:'RSI',     v:`${rsi}`,      n:'Ipervenduto',          t:'buy'})  }
-    else if (rsi < 45) { score+=1; signals.push({l:'RSI',     v:`${rsi}`,      n:'Zona debole',          t:'buy'})  }
-    else if (rsi < 55) {           signals.push({l:'RSI',     v:`${rsi}`,      n:'Neutro',               t:'neutral'}) }
-    else if (rsi < 65) { score-=1; signals.push({l:'RSI',     v:`${rsi}`,      n:'Zona forte',           t:'neutral'}) }
-    else if (rsi < 75) { score-=2; signals.push({l:'RSI',     v:`${rsi}`,      n:'Ipercomprato',         t:'sell'}) }
-    else               { score-=3; signals.push({l:'RSI',     v:`${rsi}`,      n:'Ipercomprato estremo', t:'sell'}) }
+    if      (rsi < 25) { score+=3; signals.push({l:'RSI', v:`${rsi}`, n:'Ipervenduto estremo',  t:'buy'})  }
+    else if (rsi < 35) { score+=2; signals.push({l:'RSI', v:`${rsi}`, n:'Ipervenduto',          t:'buy'})  }
+    else if (rsi < 45) { score+=1; signals.push({l:'RSI', v:`${rsi}`, n:'Zona debole',          t:'buy'})  }
+    else if (rsi < 55) {           signals.push({l:'RSI', v:`${rsi}`, n:'Neutro',               t:'neutral'}) }
+    else if (rsi < 65) { score-=1; signals.push({l:'RSI', v:`${rsi}`, n:'Zona forte',           t:'neutral'}) }
+    else if (rsi < 75) { score-=2; signals.push({l:'RSI', v:`${rsi}`, n:'Ipercomprato',         t:'sell'}) }
+    else               { score-=3; signals.push({l:'RSI', v:`${rsi}`, n:'Ipercomprato estremo', t:'sell'}) }
   }
-  // SMA trend
   if (trendUp != null) {
-    if (trendUp) { score+=1; signals.push({l:'SMA20',  v:'↑ sopra', n:'Prezzo sopra SMA20',   t:'buy'})  }
-    else         { score-=1; signals.push({l:'SMA20',  v:'↓ sotto', n:'Prezzo sotto SMA20',   t:'sell'}) }
+    if (trendUp) { score+=1; signals.push({l:'SMA20', v:'↑ sopra', n:'Prezzo sopra SMA20', t:'buy'})  }
+    else         { score-=1; signals.push({l:'SMA20', v:'↓ sotto', n:'Prezzo sotto SMA20', t:'sell'}) }
   }
-  // Golden/Death cross SMA
   if (goldenCross != null) {
-    if (goldenCross) { score+=2; signals.push({l:'Cross SMA', v:'☀ Golden', n:'SMA20 > SMA50',  t:'buy'})  }
-    else             { score-=2; signals.push({l:'Cross SMA', v:'☽ Death',  n:'SMA20 < SMA50',  t:'sell'}) }
+    if (goldenCross) { score+=2; signals.push({l:'Cross SMA', v:'☀ Golden', n:'SMA20 > SMA50', t:'buy'})  }
+    else             { score-=2; signals.push({l:'Cross SMA', v:'☽ Death',  n:'SMA20 < SMA50', t:'sell'}) }
   }
-  // EMA cross
   if (emaGolden != null) {
-    if (emaGolden) { score+=1; signals.push({l:'Cross EMA', v:'↑ EMA9>21',  n:'Momentum rialzista', t:'buy'})  }
-    else           { score-=1; signals.push({l:'Cross EMA', v:'↓ EMA9<21',  n:'Momentum ribassista',t:'sell'}) }
+    if (emaGolden) { score+=1; signals.push({l:'Cross EMA', v:'↑ EMA9>21', n:'Momentum rialzista', t:'buy'})  }
+    else           { score-=1; signals.push({l:'Cross EMA', v:'↓ EMA9<21', n:'Momentum ribassista',t:'sell'}) }
   }
-  // MACD
   if (macd) {
-    if (macd.signal==='bullish'&&macd.histogram>0)  { score+=2; signals.push({l:'MACD', v:`hist ${macd.histogram?.toFixed(3)}`, n:'Momentum rialzista', t:'buy'})  }
-    else if (macd.signal==='bullish')               { score+=1; signals.push({l:'MACD', v:'↑ cross',                          n:'Incrocio bullish',    t:'buy'})  }
-    else if (macd.signal==='bearish'&&macd.histogram<0){score-=2;signals.push({l:'MACD', v:`hist ${macd.histogram?.toFixed(3)}`,n:'Momentum ribassista', t:'sell'}) }
-    else                                            { score-=1; signals.push({l:'MACD', v:'↓ cross',                          n:'Incrocio bearish',    t:'sell'}) }
+    if (macd.signal==='bullish'&&macd.histogram>0)   { score+=2; signals.push({l:'MACD', v:`hist ${macd.histogram?.toFixed(3)}`, n:'Momentum rialzista', t:'buy'})  }
+    else if (macd.signal==='bullish')                { score+=1; signals.push({l:'MACD', v:'↑ cross', n:'Incrocio bullish', t:'buy'})  }
+    else if (macd.signal==='bearish'&&macd.histogram<0){ score-=2; signals.push({l:'MACD', v:`hist ${macd.histogram?.toFixed(3)}`, n:'Momentum ribassista', t:'sell'}) }
+    else                                             { score-=1; signals.push({l:'MACD', v:'↓ cross', n:'Incrocio bearish', t:'sell'}) }
   }
-  // Bollinger
   if (bb) {
-    if      (bb.pct < 10) { score+=2; signals.push({l:'BB',  v:`${bb.pct}%`, n:'Sotto banda inferiore', t:'buy'})  }
-    else if (bb.pct < 25) { score+=1; signals.push({l:'BB',  v:`${bb.pct}%`, n:'Zona bassa',            t:'buy'})  }
-    else if (bb.pct > 90) { score-=2; signals.push({l:'BB',  v:`${bb.pct}%`, n:'Sopra banda superiore', t:'sell'}) }
-    else if (bb.pct > 75) { score-=1; signals.push({l:'BB',  v:`${bb.pct}%`, n:'Zona alta',             t:'sell'}) }
-    else                  {           signals.push({l:'BB',  v:`${bb.pct}%`, n:'Centro banda',          t:'neutral'}) }
-    if (bb.squeeze)       {           signals.push({l:'Squeeze',v:'⚡',       n:'Breakout imminente',    t:'neutral'}) }
+    if      (bb.pct < 10) { score+=2; signals.push({l:'BB', v:`${bb.pct}%`, n:'Sotto banda inferiore', t:'buy'})  }
+    else if (bb.pct < 25) { score+=1; signals.push({l:'BB', v:`${bb.pct}%`, n:'Zona bassa',            t:'buy'})  }
+    else if (bb.pct > 90) { score-=2; signals.push({l:'BB', v:`${bb.pct}%`, n:'Sopra banda superiore', t:'sell'}) }
+    else if (bb.pct > 75) { score-=1; signals.push({l:'BB', v:`${bb.pct}%`, n:'Zona alta',             t:'sell'}) }
+    else                  {           signals.push({l:'BB', v:`${bb.pct}%`, n:'Centro banda',          t:'neutral'}) }
+    if (bb.squeeze)       {           signals.push({l:'Squeeze', v:'⚡', n:'Breakout imminente', t:'neutral'}) }
   }
-  // Stocastico
   if (stoch) {
-    if      (stoch.k < 20) { score+=1; signals.push({l:'Stoch', v:`K:${stoch.k}`, n:'Zona ipervenduta',   t:'buy'})  }
-    else if (stoch.k > 80) { score-=1; signals.push({l:'Stoch', v:`K:${stoch.k}`, n:'Zona ipercomprata',  t:'sell'}) }
-    else                   {           signals.push({l:'Stoch', v:`K:${stoch.k} D:${stoch.d}`, n:stoch.signal,t:'neutral'}) }
+    if      (stoch.k < 20) { score+=1; signals.push({l:'Stoch', v:`K:${stoch.k}`, n:'Zona ipervenduta',  t:'buy'})  }
+    else if (stoch.k > 80) { score-=1; signals.push({l:'Stoch', v:`K:${stoch.k}`, n:'Zona ipercomprata', t:'sell'}) }
+    else                   {           signals.push({l:'Stoch', v:`K:${stoch.k} D:${stoch.d}`, n:stoch.signal, t:'neutral'}) }
   }
-  // Williams %R
   if (williamsR) {
     if      (williamsR.value < -80) { score+=1; signals.push({l:'Williams %R', v:`${williamsR.value}`, n:'Ipervenduto', t:'buy'})  }
     else if (williamsR.value > -20) { score-=1; signals.push({l:'Williams %R', v:`${williamsR.value}`, n:'Ipercomprato',t:'sell'}) }
     else                            {           signals.push({l:'Williams %R', v:`${williamsR.value}`, n:'Neutro',      t:'neutral'}) }
   }
-  // CCI
   if (cci) {
     if      (cci.value < -100) { score+=1; signals.push({l:'CCI', v:`${cci.value}`, n:'Ipervenduto CCI', t:'buy'})  }
     else if (cci.value >  100) { score-=1; signals.push({l:'CCI', v:`${cci.value}`, n:'Ipercomprato CCI',t:'sell'}) }
     else                       {           signals.push({l:'CCI', v:`${cci.value}`, n:'Neutro',          t:'neutral'}) }
   }
-  // Ichimoku
   if (ichimoku) {
     if      (ichimoku.signal==='bullish') { score+=2; signals.push({l:'Ichimoku', v:'☁ sopra', n:'Prezzo sopra nuvola', t:'buy'})  }
     else if (ichimoku.signal==='bearish') { score-=2; signals.push({l:'Ichimoku', v:'☁ sotto', n:'Prezzo sotto nuvola', t:'sell'}) }
     else                                  {           signals.push({l:'Ichimoku', v:'☁ dentro',n:'Dentro la nuvola',    t:'neutral'}) }
   }
-  // OBV
   if (obv) {
     if      (obv.signal==='bullish') { score+=1; signals.push({l:'OBV', v:'↑ crescente', n:'Volume confermante', t:'buy'})  }
     else if (obv.signal==='bearish') { score-=1; signals.push({l:'OBV', v:'↓ calante',   n:'Volume divergente',  t:'sell'}) }
   }
-  // VWAP
   if (vwap) {
-    if      (vwap.aboveVwap) { score+=1; signals.push({l:'VWAP', v:`+${vwap.diff}%`, n:'Sopra VWAP',  t:'buy'})  }
+    if      (vwap.aboveVwap) { score+=1; signals.push({l:'VWAP', v:`+${vwap.diff}%`, n:'Sopra VWAP', t:'buy'})  }
     else                     { score-=1; signals.push({l:'VWAP', v:`${vwap.diff}%`,  n:'Sotto VWAP', t:'sell'}) }
   }
-  // 52W position
   if (high52 && low52) {
     const pos = (current-low52)/((high52-low52)||1)
     if      (pos < 0.15) { score+=2; signals.push({l:'52W', v:`${(pos*100).toFixed(0)}%`, n:'Vicino ai minimi', t:'buy'})  }
     else if (pos > 0.90) { score-=1; signals.push({l:'52W', v:`${(pos*100).toFixed(0)}%`, n:'Vicino ai massimi',t:'sell'}) }
   }
-  // Day change spike
   if (change >  4) { score-=1; signals.push({l:'∆Day', v:`+${change?.toFixed(1)}%`, n:'Spike rialzista', t:'sell'}) }
   if (change < -4) { score+=1; signals.push({l:'∆Day', v:`${change?.toFixed(1)}%`,  n:'Spike ribassista',t:'buy'})  }
 
-  const clamped   = Math.max(-16, Math.min(16, score))
-  const signal    = clamped >= 4 ? 'BUY' : clamped <= -4 ? 'SELL' : 'HOLD'
-  const confidence= Math.round(50 + (clamped/16)*42)
-  const shortTerm = rsi != null ? (rsi<35?'BUY':rsi>68?'SELL':'HOLD') : null
-  const longTerm  = goldenCross != null ? (goldenCross&&trendUp?'BUY':!goldenCross?'SELL':'HOLD') : null
+  const clamped    = Math.max(-16, Math.min(16, score))
+  const signal     = clamped >= 4 ? 'BUY' : clamped <= -4 ? 'SELL' : 'HOLD'
+  const confidence = Math.round(50 + (clamped/16)*42)
+  const shortTerm  = rsi != null ? (rsi<35?'BUY':rsi>68?'SELL':'HOLD') : null
+  const longTerm   = goldenCross != null ? (goldenCross&&trendUp?'BUY':!goldenCross?'SELL':'HOLD') : null
 
   return { signal, score:clamped, confidence, signals, shortTerm, longTerm }
 }
