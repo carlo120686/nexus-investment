@@ -2,7 +2,23 @@
 // Crypto  -> Finnhub  (BINANCE:BTCUSDT)
 // ETF     -> Yahoo Finance (.DE Xetra in EUR, preferred)
 // Commodity -> Yahoo Finance (GC=F futures)
-
+// Mappa ISIN → ticker Yahoo (priorità su YAHOO_MAP)
+// Aggiungere qui i ticker per ETF difficili da trovare o con suffisso diverso da .MI
+const ISIN_TO_YAHOO = {
+  'IE00BJ0KDR00': 'XCHA.DE',    // Xtrackers MSCI China
+  'IE00B04GQQ17': 'CJPA.DE',    // iShares Core MSCI Japan IMI
+  'FR0013412285': 'PAASI.PA',   // Amundi PEA Asie Emergente
+  'IE00BTEM1Y91': 'VNAM.DE',    // VanEck Vietnam
+  'IE00B4JNQZ49': 'IUFS.L',    // iShares S&P 500 Financials
+  'IE00B43HR379': 'IUHS.L',    // iShares S&P 500 Health Care
+  'IE00B42SXC22': 'IUES.L',    // iShares S&P 500 Energy
+  'IE00B40B8R38': 'IUCM.L',    // iShares S&P 500 Cons. Staples
+  'DE000A0H08E0': 'EXV1.DE',   // iShares STOXX Europe 600 Banks
+  'IE00B1FZS350': 'IPRP.L',    // iShares European Property
+  'IE00B1XNHC34': 'IQQH.DE',   // iShares Global Clean Energy
+  'DE000A27Z304': 'BTCE.DE',   // ETC Group Bitcoin ETP
+  'CH0445689208': 'ZETH.DE',   // 21Shares Ethereum ETP
+}
 // Symbol routing - Borsa Italiana (.MI) priority for ISP/Italian brokers, .DE fallback
 const YAHOO_MAP = {
   // ETF Globali
