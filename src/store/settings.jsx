@@ -1,5 +1,4 @@
-cat > src/store/settings.jsx << 'EOF'
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, createContext, useContext } from 'react'
 const Ctx = createContext(null)
 const KEY = 'nexus_v2_settings'
 const defaults = { finnhubKey: '', anthropicKey: '', aiEnabled: false }
@@ -17,4 +16,3 @@ export function SettingsProvider({ children }) {
   return <Ctx.Provider value={{ s, update, aiActive }}>{children}</Ctx.Provider>
 }
 export const useSettings = () => useContext(Ctx)
-EOF
