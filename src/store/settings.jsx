@@ -1,22 +1,20 @@
-const URL = 'https://api.anthropic.com/v1/messages'
-
-async function claude(prompt, key, max = 800) {
-  const r = await fetch(URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,                          // ← aggiunto
-      'anthropic-version': '2023-06-01',          // ← aggiunto
-      'anthropic-dangerous-allow-browser': 'true' // ← aggiunto
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: max,
-      system: 'Sei un analista finanziario senior. Rispondi SOLO con JSON valido senza backtick.',
-      messages: [{ role: 'user', content: prompt }]
-    })
+cat > src/store/settings.jsx << 'EOF'
+import { useState, useEffect, createContext, useContext } from 'react'
+const Ctx = createContext(null)
+const KEY = 'nexus_v2_settings'
+const defaults = { finnhubKey: '', anthropicKey: '', aiEnabled: false }
+export function SettingsProvider({ children }) {
+  const [s, setS] = useState(() => {
+    try { return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || '{}') } }
+    catch { return defaults }
   })
-  if (!r.ok) throw new Error(`Anthropic ${r.status}`)
-  const d = await r.json()
-  return JSON.parse(d.content.map(b => b.text || '').join('').trim())
+  const update = (patch) => setS(prev => {
+    const next = { ...prev, ...patch }
+    try { localStorage.setItem(KEY, JSON.stringify(next)) } catch {}
+    return next
+  })
+  const aiActive = s.aiEnabled && !!s.anthropicKey
+  return <Ctx.Provider value={{ s, update, aiActive }}>{children}</Ctx.Provider>
 }
+export const useSettings = () => useContext(Ctx)
+EOF
