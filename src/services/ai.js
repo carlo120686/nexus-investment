@@ -1,13 +1,14 @@
 // AI service — completamente opzionale
-const AURL = 'https://api.anthropic.com/v1/messages'
+const WORKER = 'https://nexus-proxy.carlo-fabi86.workers.dev'
+
 async function claude(prompt, key, max = 800) {
-  const r = await fetch(AURL, {
+  const target = 'https://api.anthropic.com/v1/messages'
+  const r = await fetch(`${WORKER}/?url=${encodeURIComponent(target)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': key,
       'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-allow-browser': 'true'
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514', max_tokens: max,
