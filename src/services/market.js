@@ -99,7 +99,9 @@ const yahooTick = s => YAHOO_MAP[s] || null
 // GBX (pence) -> GBP: divide by 100
 const fixGBX = (v, currency) => currency === 'GBp' || currency === 'GBX' ? v / 100 : v
 // Fallback: if .MI not found, try .DE
-const yahooTickFallback = s => {
+const yahooTickFallback = (s, isin) => {
+  // Prima cerca per ISIN se disponibile
+  if (isin && ISIN_TO_YAHOO[isin]) return [ISIN_TO_YAHOO[isin]]
   const t = YAHOO_MAP[s]
   if (!t) return []
   if (t.endsWith('.MI')) return [t, t.replace('.MI', '.DE')]
@@ -135,7 +137,7 @@ export async function fetchQuote(symbol, key) {
       if (!d.c) return { ok:false, error:'No data' }
       return { ok:true, current:d.c, change:d.dp, high:d.h, low:d.l, open:d.o, prevClose:d.pc }
     }
-    const tickers = yahooTickFallback(symbol)
+    const tickers = yahooTickFallback(symbol, asset?.isin)
     if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
     let res = null
     for (const t of tickers) { res = await yahooFetch(t, '5d'); if (res) break }
@@ -168,7 +170,7 @@ export async function fetchCandles(symbol, key, days=120) {
       closes = d.c; highs = d.h; lows = d.l; volumes = d.v||[]; timestamps = d.t||[]
       ohlc = closes.map((_,i)=>({ t:timestamps[i], o:d.o[i], h:highs[i], l:lows[i], c:closes[i], v:volumes[i]||0 }))
     } else {
-      const tickers = yahooTickFallback(symbol)
+      const tickers = yahooTickFallback(symbol, asset?.isin)
       if (!tickers.length) return { ok:false, error:'Symbol not mapped' }
       const range = days > 180 ? '1y' : days > 60 ? '6mo' : '3mo'
       let res = null
