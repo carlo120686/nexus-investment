@@ -19,12 +19,12 @@ export const ETF_LIST = [
 
   // EUROPA
   { id:'exsa',  symbol:'EXSA:XETRA',  isin:'DE0005933956', name:'iShares Core Euro Stoxx 50',       ter:0.10, cat:'Europa',     type:'ETF', acc:false },
-  { id:'meud',  symbol:'MEUD:XETRA',  isin:'LU1829221024', name:'Lyxor Core MSCI EMU',              ter:0.12, cat:'Europa',     type:'ETF', acc:true  },
   { id:'exs1',  symbol:'EXS1:XETRA',  isin:'DE0005933931', name:'iShares Core DAX',                 ter:0.16, cat:'Europa',     type:'ETF', acc:true  },
   { id:'spyw',  symbol:'SPYW:XETRA',  isin:'IE00B5M1WJ87', name:'SPDR Europe Dividend Aristocrats', ter:0.30, cat:'Europa Div', type:'ETF', acc:false },
   { id:'xeon',  symbol:'XEON:XETRA',  isin:'LU0290358497', name:'Xtrackers EUR Overnight Rate Swap',ter:0.10, cat:'Europa',     type:'ETF', acc:true  },
   { id:'isf',   symbol:'ISF:XETRA',   isin:'IE0005042456', name:'iShares Core FTSE 100',            ter:0.07, cat:'UK',         type:'ETF', acc:false },
   { id:'imea',  symbol:'IMEA:XETRA',  isin:'IE00B4K48X80', name:'iShares MSCI Europe ex-UK',        ter:0.12, cat:'Europa',     type:'ETF', acc:true  },
+  { id:'meud',  symbol:'MEUD:XETRA',  isin:'IE00B4K48X80', name:'Amundi Core Stoxx Europe 600 UCIITS ETF Acc',        ter:0.07, cat:'Europa',     type:'ETF', acc:true  },
 
   // EMERGENTI
   { id:'iema',  symbol:'IEMA:XETRA',  isin:'IE00BKM4GZ66', name:'iShares Core MSCI EM IMI',         ter:0.18, cat:'Emergenti',  type:'ETF', acc:true  },
